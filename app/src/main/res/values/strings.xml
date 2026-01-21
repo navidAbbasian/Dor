@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">دُر</string>
+
+    <!-- Main Activity -->
+    <string name="select_player_count">تعداد بازیکنان را انتخاب کنید</string>
+    <string name="players_4">۴ نفره</string>
+    <string name="players_6">۶ نفره</string>
+    <string name="players_8">۸ نفره</string>
+    <string name="players_10">۱۰ نفره</string>
+    <string name="teams_2">۲ تیم</string>
+    <string name="teams_3">۳ تیم</string>
+    <string name="teams_4">۴ تیم</string>
+    <string name="teams_5">۵ تیم</string>
+
+    <!-- Setup Activity -->
+    <string name="enter_player_names">اسامی بازیکنان را وارد کنید</string>
+    <string name="player_hint">اسم بازیکن</string>
+    <string name="next">بعدی</string>
+    <string name="back">قبلی</string>
+
+    <!-- Category Activity -->
+    <string name="select_categories">دسته‌بندی‌ها را انتخاب کنید</string>
+    <string name="min_one_category">حداقل یک دسته‌بندی انتخاب کنید</string>
+
+    <!-- Mode Activity -->
+    <string name="select_mode">حالت بازی را انتخاب کنید</string>
+    <string name="quick_mode">⚡ حالت سریع</string>
+    <string name="quick_mode_desc">هر تیم ۱ دقیقه و ۳۰ ثانیه\nتایمر بمب: ۲۵ ثانیه</string>
+    <string name="pro_mode">🎯 حالت حرفه‌ای</string>
+    <string name="pro_mode_desc">هر تیم ۲ دقیقه و ۴۵ ثانیه\nتایمر بمب: ۴۰ ثانیه</string>
+    <string name="start_game">شروع بازی</string>
+
+    <!-- Game Activity -->
+    <string name="tap_to_start">برای شروع روی اسمت بزن</string>
+    <string name="skip_word">رد کردن</string>
+    <string name="waiting">صبر کنید…</string>
+    <string name="next_turn">نوبت:</string>
+    <string name="bomb_timer">💣</string>
+
+    <!-- Winner Activity -->
+    <string name="winner">🏆 برنده</string>
+    <string name="team_wins">تیم %s برنده شد!</string>
+    <string name="play_again">بازی دوباره</string>
+    <string name="main_menu">منوی اصلی</string>
+
+    <!-- Categories -->
+    <string name="cat_film">فیلم و سریال</string>
+    <string name="cat_sports">ورزش</string>
+    <string name="cat_food">غذا و نوشیدنی</string>
+    <string name="cat_places">مکان و کشور</string>
+    <string name="cat_people">شخصیت‌های معروف</string>
+    <string name="cat_music">موسیقی</string>
+    <string name="cat_books">کتاب</string>
+    <string name="cat_animals">حیوانات</string>
+    <string name="cat_jobs">شغل و حرفه</string>
+    <string name="cat_general">عمومی</string>
+</resources>
