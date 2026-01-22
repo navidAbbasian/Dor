@@ -24,6 +24,7 @@ import com.example.dor.models.Team;
 import com.example.dor.models.Word;
 import com.example.dor.utils.GameManager;
 import com.example.dor.utils.SoundManager;
+import com.example.dor.views.CircularPlayerLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +45,14 @@ public class GameActivity extends AppCompatActivity {
     private TextView nextTurnText;
     private View explosionOverlay;
     private com.google.android.material.button.MaterialButton skipButton;
+    private CircularPlayerLayout circularGameLayout;
 
     // Team timer TextViews
     private List<TextView> teamTimerViews;
+
+    // Player indicator views around the circle
+    private List<View> playerIndicatorViews;
+    private List<String> circularPlayerOrder;
 
     // Timers
     private CountDownTimer bombTimer;
@@ -73,6 +79,8 @@ public class GameActivity extends AppCompatActivity {
 
         initViews();
         setupTeamTimers();
+        setupPlayerIndicators();
+
         showCurrentPlayerTurn();
     }
 
@@ -86,8 +94,11 @@ public class GameActivity extends AppCompatActivity {
         nextTurnText = findViewById(R.id.nextTurnText);
         explosionOverlay = findViewById(R.id.explosionOverlay);
         skipButton = findViewById(R.id.skipButton);
+        circularGameLayout = findViewById(R.id.circularGameLayout);
 
         teamTimerViews = new ArrayList<>();
+        playerIndicatorViews = new ArrayList<>();
+        circularPlayerOrder = gameManager.getCircularPlayerOrder();
 
         // Center table click - start turn or next word
         centerTableCard.setOnClickListener(v -> onCenterTableClicked());
@@ -168,6 +179,130 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    private void setupPlayerIndicators() {
+        // Remove all except the first child (center card)
+        while (circularGameLayout.getChildCount() > 1) {
+            circularGameLayout.removeViewAt(1);
+        }
+        playerIndicatorViews.clear();
+
+        // Refresh the circular player order from game manager
+        circularPlayerOrder = gameManager.getCircularPlayerOrder();
+
+        float density = getResources().getDisplayMetrics().density;
+        int playerCount = circularPlayerOrder.size();
+
+        android.util.Log.d("GameActivity", "Setting up " + playerCount + " player indicators");
+
+        if (playerCount == 0) {
+            android.util.Log.e("GameActivity", "No players found in circularPlayerOrder!");
+            return;
+        }
+
+        // Calculate indicator size based on player count
+        int indicatorSize;
+        int dotSize;
+        float textSize;
+        if (playerCount <= 4) {
+            indicatorSize = (int) (55 * density);
+            dotSize = (int) (18 * density);
+            textSize = 10;
+        } else if (playerCount <= 6) {
+            indicatorSize = (int) (50 * density);
+            dotSize = (int) (16 * density);
+            textSize = 9;
+        } else {
+            indicatorSize = (int) (45 * density);
+            dotSize = (int) (14 * density);
+            textSize = 8;
+        }
+
+        for (int i = 0; i < playerCount; i++) {
+            String playerName = circularPlayerOrder.get(i);
+            String teamColor = gameManager.getTeamColorByPlayerName(playerName);
+
+            // Create a container for dot + name
+            LinearLayout playerContainer = new LinearLayout(this);
+            playerContainer.setOrientation(LinearLayout.VERTICAL);
+            playerContainer.setGravity(Gravity.CENTER);
+
+            // Create dot/circle indicator
+            View dot = new View(this);
+            LinearLayout.LayoutParams dotParams = new LinearLayout.LayoutParams(dotSize, dotSize);
+            dotParams.gravity = Gravity.CENTER;
+            dot.setLayoutParams(dotParams);
+            dot.setBackground(getDrawable(R.drawable.player_dot));
+            dot.getBackground().setTint(Color.parseColor(teamColor));
+
+            // Create name text
+            TextView nameText = new TextView(this);
+            nameText.setText(truncateName(playerName));
+            nameText.setTextSize(textSize);
+            nameText.setTextColor(Color.parseColor(teamColor));
+            nameText.setGravity(Gravity.CENTER);
+            nameText.setMaxLines(1);
+
+            playerContainer.addView(dot);
+            playerContainer.addView(nameText);
+
+            // Set layout params
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(indicatorSize, indicatorSize);
+            playerContainer.setLayoutParams(params);
+
+            circularGameLayout.addView(playerContainer);
+            playerIndicatorViews.add(playerContainer);
+        }
+
+        updateCurrentPlayerHighlight();
+        android.util.Log.d("GameActivity", "Created " + playerIndicatorViews.size() + " player indicators");
+    }
+
+    private String truncateName(String name) {
+        if (name.length() > 6) {
+            return name.substring(0, 5) + "..";
+        }
+        return name;
+    }
+
+    private void updateCurrentPlayerHighlight() {
+        String currentPlayerName = gameManager.getCurrentPlayerName();
+
+        for (int i = 0; i < playerIndicatorViews.size(); i++) {
+            View container = playerIndicatorViews.get(i);
+            String playerName = circularPlayerOrder.get(i);
+            boolean isCurrentPlayer = playerName.equals(currentPlayerName);
+
+            if (isCurrentPlayer) {
+                // Highlight current player with scale and glow effect
+                container.setScaleX(1.4f);
+                container.setScaleY(1.4f);
+                container.setAlpha(1f);
+
+                // Add pulsing animation
+                ObjectAnimator scaleX = ObjectAnimator.ofFloat(container, "scaleX", 1.4f, 1.6f, 1.4f);
+                ObjectAnimator scaleY = ObjectAnimator.ofFloat(container, "scaleY", 1.4f, 1.6f, 1.4f);
+                scaleX.setDuration(1000);
+                scaleY.setDuration(1000);
+                scaleX.setRepeatCount(ObjectAnimator.INFINITE);
+                scaleY.setRepeatCount(ObjectAnimator.INFINITE);
+                scaleX.start();
+                scaleY.start();
+                container.setTag(R.id.playerNameText, new ObjectAnimator[]{scaleX, scaleY});
+            } else {
+                // Stop any existing animation
+                Object tag = container.getTag(R.id.playerNameText);
+                if (tag instanceof ObjectAnimator[]) {
+                    for (ObjectAnimator anim : (ObjectAnimator[]) tag) {
+                        anim.cancel();
+                    }
+                }
+                container.setScaleX(1f);
+                container.setScaleY(1f);
+                container.setAlpha(0.6f);
+            }
+        }
+    }
+
     private void showCurrentPlayerTurn() {
         isPlaying = false;
         canSkip = false;
@@ -185,6 +320,9 @@ public class GameActivity extends AppCompatActivity {
             centerTableCard.setCardBackgroundColor(Color.parseColor("#0F3460"));
         }
 
+        // Update player highlight around the circle
+        updateCurrentPlayerHighlight();
+
         // Show next player info
         updateNextTurnText();
 
@@ -195,22 +333,11 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void updateNextTurnText() {
-        // Calculate next team
-        int nextTeamIndex = (gameManager.getCurrentTeamIndex() + 1) % gameManager.getTeams().size();
-        List<Team> teams = gameManager.getTeams();
-
-        // Find next non-eliminated team
-        int count = 0;
-        while (teams.get(nextTeamIndex).isEliminated() && count < teams.size()) {
-            nextTeamIndex = (nextTeamIndex + 1) % teams.size();
-            count++;
-        }
-
-        if (!teams.get(nextTeamIndex).isEliminated()) {
-            Team nextTeam = teams.get(nextTeamIndex);
-            String nextPlayerName = nextTeam.getPlayer(0) != null ?
-                    nextTeam.getPlayer(0).getName() : "بازیکن";
+        String nextPlayerName = gameManager.getNextPlayerName();
+        if (!nextPlayerName.isEmpty()) {
             nextTurnText.setText("نوبت بعدی: " + nextPlayerName);
+        } else {
+            nextTurnText.setText("");
         }
     }
 
@@ -262,6 +389,12 @@ public class GameActivity extends AppCompatActivity {
             public void onTick(long millisUntilFinished) {
                 bombTimeRemaining = millisUntilFinished;
                 updateBombTimerDisplay();
+
+                // Start intense mode in last 10 seconds
+                int seconds = (int) (millisUntilFinished / 1000);
+                if (seconds <= 10 && !soundManager.isIntenseMode()) {
+                    soundManager.setIntenseMode(true);
+                }
             }
 
             @Override
@@ -340,6 +473,8 @@ public class GameActivity extends AppCompatActivity {
         if (tickHandler != null && tickRunnable != null) {
             tickHandler.removeCallbacks(tickRunnable);
         }
+        // Stop intense mode
+        soundManager.setIntenseMode(false);
     }
 
     private void updateBombTimerDisplay() {
@@ -365,21 +500,52 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void onWordGuessed() {
-        stopTimers();
-        stopTickSound();
+        // Play word correct sound
+        soundManager.playWordCorrect();
+        soundManager.vibrateShort();
+
+        // Stop only team timer, bomb timer continues!
+        if (teamTimer != null) {
+            teamTimer.cancel();
+        }
+        if (skipCooldownTimer != null) {
+            skipCooldownTimer.cancel();
+        }
+
+        // Play next turn sound
+        soundManager.playNextTurn();
 
         // Move to next team
         gameManager.moveToNextTeam();
 
         // Check if game is over
         if (gameManager.isGameOver()) {
+            stopTimers();
+            stopTickSound();
             showWinner();
             return;
         }
 
-        // Show next player's turn
+        // Update highlights
         updateTeamTimerHighlight();
-        showCurrentPlayerTurn();
+        updateCurrentPlayerHighlight();
+
+        // Show new word immediately (no need to show player name mid-round)
+        Word word = gameManager.nextWord();
+        if (word != null) {
+            wordText.setText(word.getText());
+        } else {
+            wordText.setText("کلمه‌ای نیست!");
+        }
+
+        // Start team timer for new team
+        startTeamTimer();
+
+        // Restart skip cooldown
+        startSkipCooldown();
+
+        // Update next turn text
+        updateNextTurnText();
     }
 
     private void onSkipClicked() {
@@ -407,15 +573,16 @@ public class GameActivity extends AppCompatActivity {
         stopTimers();
         stopTickSound();
 
-        // Apply penalty
+        // Apply penalty to current team
         gameManager.onBombExploded();
 
         // Check if current team is eliminated
         Team currentTeam = gameManager.getCurrentTeam();
         if (currentTeam != null && currentTeam.isEliminated()) {
-            // Move to next team
+            // Move to next team only if current team is eliminated
             gameManager.moveToNextTeam();
         }
+        // If team is not eliminated, same player continues in new round
 
         // Check if game is over
         if (gameManager.isGameOver()) {
@@ -424,10 +591,10 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
 
-        // Update UI and continue with same player (or next if eliminated)
+        // Update UI
         updateTeamTimerHighlight();
 
-        // Delay before showing next turn
+        // Delay before showing next turn (same player starts new round)
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             showCurrentPlayerTurn();
         }, 1500);

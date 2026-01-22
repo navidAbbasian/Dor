@@ -1,26 +1,24 @@
 package com.example.dor.adapters;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dor.R;
 import com.example.dor.models.Category;
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
 
-    private List<Category> categories;
-    private OnCategoryClickListener listener;
+    private final List<Category> categories;
+    private final OnCategoryClickListener listener;
 
     public interface OnCategoryClickListener {
         void onCategoryClick(Category category, int position);
@@ -51,31 +49,43 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     }
 
     class CategoryViewHolder extends RecyclerView.ViewHolder {
-        private TextView emojiText;
-        private TextView categoryName;
-        private ImageView checkIcon;
-        private CardView cardView;
-        private LinearLayout categoryContainer;
+        private final TextView categoryName;
+        private final TextView wordCountText;
+        private final View selectionIndicator;
+        private final MaterialCardView cardView;
 
         public CategoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            emojiText = itemView.findViewById(R.id.emojiText);
             categoryName = itemView.findViewById(R.id.categoryName);
-            checkIcon = itemView.findViewById(R.id.checkIcon);
-            cardView = (CardView) itemView;
-            categoryContainer = itemView.findViewById(R.id.categoryContainer);
+            wordCountText = itemView.findViewById(R.id.wordCountText);
+            selectionIndicator = itemView.findViewById(R.id.selectionIndicator);
+            cardView = (MaterialCardView) itemView;
         }
 
         public void bind(Category category, int position) {
-            emojiText.setText(category.getEmoji());
-            categoryName.setText(category.getName());
+            // Show name with emoji prefix for visual distinction
+            categoryName.setText(category.getEmoji() + "  " + category.getName());
 
-            if (category.isSelected()) {
-                cardView.setCardBackgroundColor(Color.parseColor("#E94560"));
-                checkIcon.setVisibility(View.VISIBLE);
+            // Show word count
+            int wordCount = category.getWordCount();
+            if (wordCount > 0) {
+                wordCountText.setVisibility(View.VISIBLE);
+                wordCountText.setText(wordCount + " کلمه");
             } else {
-                cardView.setCardBackgroundColor(Color.parseColor("#0F3460"));
-                checkIcon.setVisibility(View.GONE);
+                wordCountText.setVisibility(View.GONE);
+            }
+
+            // Update selection state
+            if (category.isSelected()) {
+                cardView.setStrokeColor(ContextCompat.getColor(itemView.getContext(), R.color.primary));
+                cardView.setStrokeWidth(4);
+                cardView.setCardElevation(6);
+                selectionIndicator.setVisibility(View.VISIBLE);
+            } else {
+                cardView.setStrokeColor(ContextCompat.getColor(itemView.getContext(), android.R.color.transparent));
+                cardView.setStrokeWidth(0);
+                cardView.setCardElevation(2);
+                selectionIndicator.setVisibility(View.GONE);
             }
 
             itemView.setOnClickListener(v -> {

@@ -22,13 +22,13 @@ public class GameManager {
     private Word currentWord;
     private WordRepository wordRepository;
 
-    // Team colors
+    // Team colors - Bright & Fun
     private static final String[] TEAM_COLORS = {
-            "#E53935", // Red
-            "#1E88E5", // Blue
-            "#43A047", // Green
-            "#FDD835", // Yellow
-            "#8E24AA"  // Purple
+            "#FF6B6B", // Red
+            "#4ECDC4", // Teal
+            "#7ED957", // Green
+            "#FFD93D", // Yellow
+            "#C792EA"  // Purple
     };
 
     private GameManager() {
@@ -62,11 +62,18 @@ public class GameManager {
         // So we need to distribute them correctly
         int teamCount = teams.size();
 
+        // Clear existing players from all teams first
+        for (Team team : teams) {
+            team.getPlayers().clear();
+        }
+
         for (int i = 0; i < playerNames.size(); i++) {
             int teamIndex = i % teamCount;
             Player player = new Player(playerNames.get(i), teamIndex);
             teams.get(teamIndex).addPlayer(player);
         }
+
+        android.util.Log.d("GameManager", "Set " + playerNames.size() + " player names across " + teamCount + " teams");
     }
 
     public void setGameMode(GameMode mode) {
@@ -105,6 +112,34 @@ public class GameManager {
         return player != null ? player.getName() : "";
     }
 
+    /**
+     * Get the name of the next player in turn order
+     */
+    public String getNextPlayerName() {
+        // Find next non-eliminated team following the circular order
+        int nextTeamIndex = currentTeamIndex;
+        int nextPlayerIndex = currentPlayerIndexInTeam;
+        int count = 0;
+        int maxIterations = teams.size() * 2; // Maximum possible iterations
+
+        do {
+            nextTeamIndex = (nextTeamIndex + 1) % teams.size();
+
+            // If we've gone through all teams, move to next player index
+            if (nextTeamIndex == 0) {
+                nextPlayerIndex = (nextPlayerIndex + 1) % 2;
+            }
+            count++;
+        } while (teams.get(nextTeamIndex).isEliminated() && count < maxIterations);
+
+        if (!teams.get(nextTeamIndex).isEliminated()) {
+            Team nextTeam = teams.get(nextTeamIndex);
+            Player nextPlayer = nextTeam.getPlayer(nextPlayerIndex);
+            return nextPlayer != null ? nextPlayer.getName() : "";
+        }
+        return "";
+    }
+
     public Word nextWord() {
         currentWord = wordRepository.getNextWord();
         return currentWord;
@@ -122,9 +157,17 @@ public class GameManager {
     public void moveToNextTeam() {
         // Find next non-eliminated team
         int startIndex = currentTeamIndex;
+        int startPlayerIndex = currentPlayerIndexInTeam;
+
         do {
             currentTeamIndex = (currentTeamIndex + 1) % teams.size();
-        } while (teams.get(currentTeamIndex).isEliminated() && currentTeamIndex != startIndex);
+
+            // If we've gone through all teams, move to next player index
+            if (currentTeamIndex == 0) {
+                currentPlayerIndexInTeam = (currentPlayerIndexInTeam + 1) % 2;
+            }
+        } while (teams.get(currentTeamIndex).isEliminated() &&
+                 !(currentTeamIndex == startIndex && currentPlayerIndexInTeam == startPlayerIndex));
     }
 
     public void onBombExploded() {

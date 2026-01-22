@@ -18,6 +18,9 @@ public class WinnerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_winner);
 
+        // Play game over/winner sound
+        SoundManager.getInstance().playGameOver();
+
         // Get winner info from intent
         String winnerColor = getIntent().getStringExtra("winnerColor");
         String player1 = getIntent().getStringExtra("winnerPlayer1");

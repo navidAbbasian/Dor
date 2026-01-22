@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">دُر</string>
 
+    <!-- Navigation -->
+    <string name="nav_add_words">افزودن کلمه</string>
+    <string name="nav_play">شروع بازی</string>
+    <string name="nav_settings">تنظیمات</string>
+
     <!-- Main Activity -->
     <string name="select_player_count">تعداد بازیکنان را انتخاب کنید</string>
     <string name="players_4">۴ نفره</string>
@@ -54,4 +59,21 @@
     <string name="cat_animals">حیوانات</string>
     <string name="cat_jobs">شغل و حرفه</string>
     <string name="cat_general">عمومی</string>
+
+    <!-- Add Words Activity -->
+    <string name="add_word_title">افزودن کلمه جدید</string>
+    <string name="word_hint">کلمه را وارد کنید</string>
+    <string name="select_category">دسته‌بندی را انتخاب کنید</string>
+    <string name="add_word">افزودن</string>
+    <string name="word_added_success">کلمه با موفقیت اضافه شد!</string>
+    <string name="word_empty_error">لطفاً کلمه را وارد کنید</string>
+    <string name="my_words">کلمات من</string>
+    <string name="custom_words">کلمات سفارشی</string>
+
+    <!-- Settings Activity -->
+    <string name="settings_title">تنظیمات</string>
+    <string name="sound_effects">جلوه‌های صوتی</string>
+    <string name="background_music">موسیقی پس‌زمینه</string>
+    <string name="vibration">لرزش</string>
+    <string name="about_game">درباره بازی</string>
 </resources>

@@ -1,20 +1,23 @@
 package com.example.dor;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
+import com.example.dor.data.WordRepository;
+import com.example.dor.fragments.AddWordsFragment;
+import com.example.dor.fragments.PlayFragment;
+import com.example.dor.fragments.SettingsFragment;
 import com.example.dor.utils.GameManager;
 import com.example.dor.utils.SoundManager;
-import com.example.dor.data.WordRepository;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
     private GameManager gameManager;
     private SoundManager soundManager;
+    private BottomNavigationView bottomNavigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,17 +35,33 @@ public class MainActivity extends AppCompatActivity {
         // Start background music
         soundManager.startBackgroundMusic();
 
-        // Setup button click listeners
-        findViewById(R.id.btn4Players).setOnClickListener(v -> startSetup(4));
-        findViewById(R.id.btn6Players).setOnClickListener(v -> startSetup(6));
-        findViewById(R.id.btn8Players).setOnClickListener(v -> startSetup(8));
-        findViewById(R.id.btn10Players).setOnClickListener(v -> startSetup(10));
-    }
+        // Setup bottom navigation
+        bottomNavigation = findViewById(R.id.bottomNavigation);
+        bottomNavigation.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
+            int itemId = item.getItemId();
 
-    private void startSetup(int playerCount) {
-        Intent intent = new Intent(this, SetupActivity.class);
-        intent.putExtra("playerCount", playerCount);
-        startActivity(intent);
+            if (itemId == R.id.nav_add_words) {
+                selectedFragment = new AddWordsFragment();
+            } else if (itemId == R.id.nav_play) {
+                selectedFragment = new PlayFragment();
+            } else if (itemId == R.id.nav_settings) {
+                selectedFragment = new SettingsFragment();
+            }
+
+            if (selectedFragment != null) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, selectedFragment)
+                        .commit();
+            }
+            return true;
+        });
+
+        // Set default fragment (Play - center tab)
+        if (savedInstanceState == null) {
+            bottomNavigation.setSelectedItemId(R.id.nav_play);
+        }
     }
 
     @Override

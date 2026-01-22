@@ -5,15 +5,14 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.Toast;
+import android.widget.LinearLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.dor.models.GameMode;
 import com.example.dor.utils.GameManager;
+import com.example.dor.views.CircularPlayerLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,17 +20,17 @@ import java.util.List;
 public class SetupActivity extends AppCompatActivity {
 
     private int playerCount;
-    private FrameLayout tableContainer;
+    private CircularPlayerLayout circularPlayerLayout;
     private List<EditText> playerInputs;
     private GameManager gameManager;
 
-    // Team colors
+    // Team colors - Bright & Fun
     private static final String[] TEAM_COLORS = {
-            "#E53935", // Red
-            "#1E88E5", // Blue
-            "#43A047", // Green
-            "#FDD835", // Yellow
-            "#8E24AA"  // Purple
+            "#FF6B6B", // Red
+            "#4ECDC4", // Teal
+            "#7ED957", // Green
+            "#FFD93D", // Yellow
+            "#C792EA"  // Purple
     };
 
     @Override
@@ -40,76 +39,67 @@ public class SetupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_setup);
 
         playerCount = getIntent().getIntExtra("playerCount", 4);
-        tableContainer = findViewById(R.id.tableContainer);
+        circularPlayerLayout = findViewById(R.id.circularPlayerLayout);
         playerInputs = new ArrayList<>();
         gameManager = GameManager.getInstance();
 
         // Initialize game with default mode (will be set later)
         gameManager.initializeGame(playerCount, GameMode.QUICK);
 
-        // Wait for layout to be ready before adding player inputs
-        tableContainer.post(this::setupPlayerInputs);
+        // Add player input cards
+        setupPlayerInputs();
 
         findViewById(R.id.nextButton).setOnClickListener(v -> onNextClicked());
     }
 
     private void setupPlayerInputs() {
-        int containerWidth = tableContainer.getWidth();
-        int containerHeight = tableContainer.getHeight();
-        int centerX = containerWidth / 2;
-        int centerY = containerHeight / 2;
+        // The first child (center table) is already in the XML
+        // Just add player input cards for each player
 
-        // Calculate radius for player positions (slightly less than half container)
-        int radius = (int) (Math.min(containerWidth, containerHeight) * 0.38);
-
-        // Input field dimensions
-        int inputWidth = 120;
-        int inputHeight = 50;
-
-        // Convert dp to pixels
         float density = getResources().getDisplayMetrics().density;
-        int inputWidthPx = (int) (inputWidth * density);
-        int inputHeightPx = (int) (inputHeight * density);
-
         int teamCount = playerCount / 2;
 
-        // Create ordered list of player positions
-        // Order: T1P1, T2P1, T3P1, T1P2, T2P2, T3P2 (alternating teams, sitting in circle)
+        // Card dimensions based on player count
+        int cardWidth, cardHeight;
+        if (playerCount <= 4) {
+            cardWidth = (int) (95 * density);
+            cardHeight = (int) (48 * density);
+        } else if (playerCount <= 6) {
+            cardWidth = (int) (85 * density);
+            cardHeight = (int) (44 * density);
+        } else {
+            cardWidth = (int) (75 * density);
+            cardHeight = (int) (40 * density);
+        }
+
+        // Add player cards
         for (int i = 0; i < playerCount; i++) {
-            // Calculate angle for this player position
-            // Start from top (-90 degrees) and go clockwise
-            double angle = Math.toRadians(-90 + (360.0 / playerCount) * i);
-
-            int x = centerX + (int) (radius * Math.cos(angle)) - inputWidthPx / 2;
-            int y = centerY + (int) (radius * Math.sin(angle)) - inputHeightPx / 2;
-
-            // Determine team for this player (alternating pattern)
             int teamIndex = i % teamCount;
+            EditText editText = createPlayerInput(i, teamIndex);
 
-            EditText editText = createPlayerInput(i, teamIndex, inputWidthPx, inputHeightPx);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(cardWidth, cardHeight);
+            editText.setLayoutParams(params);
 
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(inputWidthPx, inputHeightPx);
-            params.leftMargin = x;
-            params.topMargin = y;
-
-            tableContainer.addView(editText, params);
+            circularPlayerLayout.addView(editText);
             playerInputs.add(editText);
         }
+
+        android.util.Log.d("SetupActivity", "Added " + playerInputs.size() + " player inputs for " + playerCount + " players");
     }
 
-    private EditText createPlayerInput(int playerIndex, int teamIndex, int width, int height) {
+    private EditText createPlayerInput(int playerIndex, int teamIndex) {
         EditText editText = new EditText(this);
         editText.setHint(getString(R.string.player_hint) + " " + (playerIndex + 1));
         editText.setHintTextColor(Color.parseColor("#80FFFFFF"));
         editText.setTextColor(Color.WHITE);
-        editText.setTextSize(12);
+        editText.setTextSize(11);
         editText.setGravity(Gravity.CENTER);
-        editText.setBackground(getDrawable(R.drawable.player_input_background));
+        editText.setBackground(getDrawable(R.drawable.player_card_background));
         editText.setPadding(8, 8, 8, 8);
         editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
         editText.setSingleLine(true);
 
-        // Set border color based on team
+        // Set background color based on team
         editText.getBackground().setTint(Color.parseColor(TEAM_COLORS[teamIndex]));
 
         return editText;

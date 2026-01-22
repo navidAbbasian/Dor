@@ -8,32 +8,51 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Game Colors -->
-    <color name="primary">#2C3E50</color>
-    <color name="primary_dark">#1A252F</color>
-    <color name="accent">#E74C3C</color>
-    <color name="background">#1A1A2E</color>
-    <color name="surface">#16213E</color>
-    <color name="card_background">#0F3460</color>
+    <!-- Game Colors - Bright & Cheerful for Kids -->
+    <color name="primary">#FF6B9D</color>
+    <color name="primary_dark">#E85A8C</color>
+    <color name="accent">#FFB347</color>
+    <color name="background">#FFF5E6</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="card_background">#FFFFFF</color>
 
-    <!-- Team Colors -->
-    <color name="team_red">#E53935</color>
-    <color name="team_blue">#1E88E5</color>
-    <color name="team_green">#43A047</color>
-    <color name="team_yellow">#FDD835</color>
-    <color name="team_purple">#8E24AA</color>
+    <!-- Gradient Background Colors -->
+    <color name="gradient_start">#FFE5EC</color>
+    <color name="gradient_center">#FFF5E6</color>
+    <color name="gradient_end">#E8F4FD</color>
+
+    <!-- Team Colors - Bright & Fun -->
+    <color name="team_red">#FF6B6B</color>
+    <color name="team_blue">#4ECDC4</color>
+    <color name="team_green">#7ED957</color>
+    <color name="team_yellow">#FFD93D</color>
+    <color name="team_purple">#C792EA</color>
 
     <!-- Timer Colors -->
-    <color name="timer_safe">#4CAF50</color>
-    <color name="timer_warning">#FF9800</color>
-    <color name="timer_danger">#F44336</color>
+    <color name="timer_safe">#7ED957</color>
+    <color name="timer_warning">#FFB347</color>
+    <color name="timer_danger">#FF6B6B</color>
 
     <!-- Text Colors -->
-    <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#B0BEC5</color>
+    <color name="text_primary">#4A4A4A</color>
+    <color name="text_secondary">#7A7A7A</color>
+    <color name="text_on_primary">#FFFFFF</color>
 
-    <!-- Button Colors -->
-    <color name="button_primary">#E94560</color>
-    <color name="button_secondary">#533483</color>
-    <color name="button_disabled">#666666</color>
+    <!-- Button Colors - Cheerful -->
+    <color name="button_primary">#FF6B9D</color>
+    <color name="button_secondary">#4ECDC4</color>
+    <color name="button_tertiary">#FFB347</color>
+    <color name="button_disabled">#CCCCCC</color>
+
+    <!-- Navigation Colors -->
+    <color name="nav_selected">#FF6B9D</color>
+    <color name="nav_unselected">#AAAAAA</color>
+    <color name="nav_background">#FFFFFF</color>
+
+    <!-- Card Colors - Pastel -->
+    <color name="card_pink">#FFE5EC</color>
+    <color name="card_blue">#E8F4FD</color>
+    <color name="card_green">#E8F8E8</color>
+    <color name="card_yellow">#FFF8E1</color>
+    <color name="card_purple">#F3E5F5</color>
 </resources>

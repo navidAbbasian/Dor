@@ -62,6 +62,10 @@ public class Category {
         this.selected = selected;
     }
 
+    public int getWordCount() {
+        return words != null ? words.size() : 0;
+    }
+
     public String getDisplayName() {
         return emoji + " " + name;
     }

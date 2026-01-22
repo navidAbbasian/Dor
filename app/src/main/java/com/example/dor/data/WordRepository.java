@@ -106,6 +106,24 @@ public class WordRepository {
         currentWordIndex = 0;
     }
 
+    /**
+     * Add a custom word to a category
+     */
+    public void addCustomWord(String text, String categoryId) {
+        Word customWord = new Word(text, categoryId, 1);
+
+        // Find the category and add the word
+        for (Category category : categories) {
+            if (category.getId().equals(categoryId)) {
+                if (category.getWords() == null) {
+                    category.setWords(new ArrayList<>());
+                }
+                category.getWords().add(customWord);
+                break;
+            }
+        }
+    }
+
     private List<Category> getDefaultCategories() {
         List<Category> defaultCategories = new ArrayList<>();
 
