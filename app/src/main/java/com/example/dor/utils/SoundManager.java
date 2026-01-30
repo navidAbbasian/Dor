@@ -39,6 +39,7 @@ public class SoundManager {
     private int wordCorrectId = 0;
     private int gameOverId = 0;
     private int countdownBeepId = 0;
+    private int teamEliminatedId = 0;
 
     private boolean soundEnabled = true;
     private boolean musicEnabled = true;
@@ -119,6 +120,12 @@ public class SoundManager {
 
         try {
             countdownBeepId = soundPool.load(context, R.raw.countdown_beep, 1);
+        } catch (Exception e) {
+            // Sound file not found
+        }
+
+        try {
+            teamEliminatedId = soundPool.load(context, R.raw.team_eliminated, 1);
         } catch (Exception e) {
             // Sound file not found
         }
@@ -221,6 +228,17 @@ public class SoundManager {
 
         if (gameOverId != 0) {
             soundPool.play(gameOverId, 1.0f, 1.0f, 1, 0, 1.0f);
+        }
+    }
+
+    /**
+     * Play team eliminated sound
+     */
+    public void playTeamEliminated() {
+        if (!soundEnabled || soundPool == null) return;
+
+        if (teamEliminatedId != 0) {
+            soundPool.play(teamEliminatedId, 1.0f, 1.0f, 1, 0, 1.0f);
         }
     }
 

@@ -61,8 +61,5 @@ public class WinnerActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
-
-        // Start background music again
-        SoundManager.getInstance().startBackgroundMusic();
     }
 }

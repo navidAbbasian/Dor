@@ -267,38 +267,84 @@ public class GameActivity extends AppCompatActivity {
     private void updateCurrentPlayerHighlight() {
         String currentPlayerName = gameManager.getCurrentPlayerName();
 
+        // First, stop ALL animations and reset ALL players to default state
         for (int i = 0; i < playerIndicatorViews.size(); i++) {
             View container = playerIndicatorViews.get(i);
-            String playerName = circularPlayerOrder.get(i);
-            boolean isCurrentPlayer = playerName.equals(currentPlayerName);
 
-            if (isCurrentPlayer) {
-                // Highlight current player with scale and glow effect
-                container.setScaleX(1.4f);
-                container.setScaleY(1.4f);
+            // Stop any existing animation first
+            Object tag = container.getTag(R.id.playerNameText);
+            if (tag instanceof ObjectAnimator[]) {
+                for (ObjectAnimator anim : (ObjectAnimator[]) tag) {
+                    anim.cancel();
+                }
+                container.setTag(R.id.playerNameText, null);
+            }
+
+            // Reset all properties immediately
+            container.setScaleX(1f);
+            container.setScaleY(1f);
+            container.setAlpha(0.5f);
+            container.setBackground(null);
+            container.setPadding(0, 0, 0, 0);
+
+            // Reset dot and text
+            LinearLayout playerContainer = (LinearLayout) container;
+            View dot = playerContainer.getChildAt(0);
+            TextView nameText = (TextView) playerContainer.getChildAt(1);
+            String playerName = circularPlayerOrder.get(i);
+            String teamColor = gameManager.getTeamColorByPlayerName(playerName);
+
+            dot.setBackground(getDrawable(R.drawable.player_dot));
+            dot.getBackground().setTint(Color.parseColor(teamColor));
+            nameText.setTextColor(Color.parseColor(teamColor));
+            nameText.setTypeface(null, android.graphics.Typeface.NORMAL);
+            nameText.setShadowLayer(0, 0, 0, Color.TRANSPARENT);
+        }
+
+        // Now highlight only the current player
+        for (int i = 0; i < playerIndicatorViews.size(); i++) {
+            String playerName = circularPlayerOrder.get(i);
+            if (playerName.equals(currentPlayerName)) {
+                View container = playerIndicatorViews.get(i);
+                LinearLayout playerContainer = (LinearLayout) container;
+                View dot = playerContainer.getChildAt(0);
+                TextView nameText = (TextView) playerContainer.getChildAt(1);
+                String teamColor = gameManager.getTeamColorByPlayerName(playerName);
+
+                // Highlight current player with scale, glow effect and background
+                container.setScaleX(1.5f);
+                container.setScaleY(1.5f);
                 container.setAlpha(1f);
 
-                // Add pulsing animation
-                ObjectAnimator scaleX = ObjectAnimator.ofFloat(container, "scaleX", 1.4f, 1.6f, 1.4f);
-                ObjectAnimator scaleY = ObjectAnimator.ofFloat(container, "scaleY", 1.4f, 1.6f, 1.4f);
-                scaleX.setDuration(1000);
-                scaleY.setDuration(1000);
+                // Add distinctive background to the container
+                container.setBackground(getDrawable(R.drawable.current_player_background));
+                container.setPadding(8, 8, 8, 8);
+
+                // Change dot to active style with glow ring
+                dot.setBackground(getDrawable(R.drawable.player_dot_active));
+                dot.getBackground().setTint(Color.parseColor(teamColor));
+
+                // Make name text bold and brighter
+                nameText.setTextColor(Color.WHITE);
+                nameText.setTypeface(nameText.getTypeface(), android.graphics.Typeface.BOLD);
+                nameText.setShadowLayer(8, 0, 0, Color.parseColor(teamColor));
+
+                // Add pulsing animation with more dramatic effect
+                ObjectAnimator scaleX = ObjectAnimator.ofFloat(container, "scaleX", 1.5f, 1.7f, 1.5f);
+                ObjectAnimator scaleY = ObjectAnimator.ofFloat(container, "scaleY", 1.5f, 1.7f, 1.5f);
+                ObjectAnimator alphaAnim = ObjectAnimator.ofFloat(container, "alpha", 1f, 0.85f, 1f);
+                scaleX.setDuration(800);
+                scaleY.setDuration(800);
+                alphaAnim.setDuration(800);
                 scaleX.setRepeatCount(ObjectAnimator.INFINITE);
                 scaleY.setRepeatCount(ObjectAnimator.INFINITE);
+                alphaAnim.setRepeatCount(ObjectAnimator.INFINITE);
                 scaleX.start();
                 scaleY.start();
-                container.setTag(R.id.playerNameText, new ObjectAnimator[]{scaleX, scaleY});
-            } else {
-                // Stop any existing animation
-                Object tag = container.getTag(R.id.playerNameText);
-                if (tag instanceof ObjectAnimator[]) {
-                    for (ObjectAnimator anim : (ObjectAnimator[]) tag) {
-                        anim.cancel();
-                    }
-                }
-                container.setScaleX(1f);
-                container.setScaleY(1f);
-                container.setAlpha(0.6f);
+                alphaAnim.start();
+                container.setTag(R.id.playerNameText, new ObjectAnimator[]{scaleX, scaleY, alphaAnim});
+
+                break; // Only one current player
             }
         }
     }
@@ -413,6 +459,9 @@ public class GameActivity extends AppCompatActivity {
         teamTimer = new CountDownTimer(currentTeam.getRemainingTimeMillis(), 100) {
             @Override
             public void onTick(long millisUntilFinished) {
+                // Only update team time if actually playing (prevents updates during waiting for player click)
+                if (!isPlaying) return;
+
                 Team team = gameManager.getCurrentTeam();
                 if (team != null) {
                     long elapsed = System.currentTimeMillis() - lastTeamTimerUpdate;
@@ -579,6 +628,8 @@ public class GameActivity extends AppCompatActivity {
         // Check if current team is eliminated
         Team currentTeam = gameManager.getCurrentTeam();
         if (currentTeam != null && currentTeam.isEliminated()) {
+            // Play team eliminated sound
+            soundManager.playTeamEliminated();
             // Move to next team only if current team is eliminated
             gameManager.moveToNextTeam();
         }
@@ -605,6 +656,9 @@ public class GameActivity extends AppCompatActivity {
         if (currentTeam != null) {
             currentTeam.setEliminated(true);
         }
+
+        // Play team eliminated sound
+        soundManager.playTeamEliminated();
 
         stopTimers();
         stopTickSound();

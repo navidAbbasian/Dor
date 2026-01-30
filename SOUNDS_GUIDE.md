@@ -15,6 +15,7 @@
 | `word_correct.mp3` | صدای درست گفتن کلمه | صدای success/ding (~0.3 ثانیه) |
 | `game_over.mp3` | صدای پایان بازی/برنده | موسیقی جشن (~3 ثانیه) |
 | `countdown_beep.mp3` | صدای بیپ شمارش معکوس | صدای beep (~0.2 ثانیه) |
+| `team_eliminated.mp3` | صدای حذف شدن تیم | صدای غمگین/باخت (~1 ثانیه) |
 
 ---
 
@@ -31,7 +32,7 @@
 - `success ding` برای word_correct.mp3
 - `victory fanfare` برای game_over.mp3
 - `beep` برای countdown_beep.mp3
-- `tension music` برای bomb_tension.mp3
+- `game over` یا `lose sound` برای team_eliminated.mp3
 - `happy background music` برای background_music.mp3
 
 ### 2. Pixabay Audio (رایگان - بدون ثبت‌نام)
@@ -92,6 +93,10 @@
 
 ### پایان بازی (game_over.mp3)
 - در صفحه برنده پخش می‌شود
+
+### حذف تیم (team_eliminated.mp3)
+- وقتی زمان یک تیم تمام می‌شود و از بازی حذف می‌شود
+- صدای غمگین یا باخت
 
 ---
 
