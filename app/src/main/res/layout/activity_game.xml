@@ -8,6 +8,20 @@
     android:fitsSystemWindows="true"
     tools:context=".GameActivity">
 
+    <!-- Pause Button -->
+    <ImageButton
+        android:id="@+id/pauseButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@android:drawable/ic_media_pause"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/pause"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/text_primary"/>
+
     <!-- Team Timers Container at top -->
     <HorizontalScrollView
         android:id="@+id/timersScrollView"
@@ -15,7 +29,7 @@
         android:layout_height="wrap_content"
         android:scrollbars="none"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/pauseButton">
 
         <LinearLayout
             android:id="@+id/teamTimersContainer"

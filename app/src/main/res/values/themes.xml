@@ -56,4 +56,11 @@
         <item name="cardElevation">8dp</item>
         <item name="cardBackgroundColor">@color/card_background</item>
     </style>
+
+    <!-- Pause Dialog Theme -->
+    <style name="PauseDialogTheme" parent="Theme.MaterialComponents.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
 </resources>

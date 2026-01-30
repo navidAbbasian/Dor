@@ -22,13 +22,13 @@ public class GameManager {
     private Word currentWord;
     private WordRepository wordRepository;
 
-    // Team colors - Bright & Fun
+    // Team colors - Dark & Visible on white background
     private static final String[] TEAM_COLORS = {
-            "#FF6B6B", // Red
-            "#4ECDC4", // Teal
-            "#7ED957", // Green
-            "#FFD93D", // Yellow
-            "#C792EA"  // Purple
+            "#B71C1C", // Deep Red
+            "#0D47A1", // Deep Blue
+            "#1B5E20", // Deep Green
+            "#E65100", // Deep Orange
+            "#4A148C"  // Deep Purple
     };
 
     private GameManager() {

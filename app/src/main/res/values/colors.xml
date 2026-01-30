@@ -21,12 +21,12 @@
     <color name="gradient_center">#FFF5E6</color>
     <color name="gradient_end">#E8F4FD</color>
 
-    <!-- Team Colors - Bright & Fun -->
-    <color name="team_red">#FF6B6B</color>
-    <color name="team_blue">#4ECDC4</color>
-    <color name="team_green">#7ED957</color>
-    <color name="team_yellow">#FFD93D</color>
-    <color name="team_purple">#C792EA</color>
+    <!-- Team Colors - Dark & Visible on white background -->
+    <color name="team_red">#B71C1C</color>
+    <color name="team_blue">#0D47A1</color>
+    <color name="team_green">#1B5E20</color>
+    <color name="team_yellow">#E65100</color>
+    <color name="team_purple">#4A148C</color>
 
     <!-- Timer Colors -->
     <color name="timer_safe">#7ED957</color>

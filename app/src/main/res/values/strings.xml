@@ -22,6 +22,7 @@
     <string name="player_hint">اسم بازیکن</string>
     <string name="next">بعدی</string>
     <string name="back">قبلی</string>
+    <string name="no_duplicate_names">⚠️ از اسامی تکراری استفاده نکنید</string>
 
     <!-- Category Activity -->
     <string name="select_categories">دسته‌بندی‌ها را انتخاب کنید</string>
@@ -41,6 +42,10 @@
     <string name="waiting">صبر کنید…</string>
     <string name="next_turn">نوبت:</string>
     <string name="bomb_timer">💣</string>
+    <string name="pause">توقف</string>
+    <string name="game_paused">بازی متوقف شد</string>
+    <string name="resume_game">ادامه بازی</string>
+    <string name="end_game">اتمام بازی</string>
 
     <!-- Winner Activity -->
     <string name="winner">🏆 برنده</string>

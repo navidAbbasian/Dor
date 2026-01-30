@@ -22,6 +22,18 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="24dp"/>
 
+    <TextView
+        android:id="@+id/warningText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_duplicate_names"
+        android:textColor="@color/timer_warning"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleText"
+        android:layout_marginTop="8dp"/>
+
     <!-- Circular Player Layout -->
     <com.example.dor.views.CircularPlayerLayout
         android:id="@+id/circularPlayerLayout"
@@ -30,7 +42,7 @@
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleText"
+        app:layout_constraintTop_toBottomOf="@id/warningText"
         app:layout_constraintBottom_toTopOf="@id/nextButton"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp">

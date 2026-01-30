@@ -12,10 +12,12 @@ import android.os.Looper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
@@ -46,6 +48,7 @@ public class GameActivity extends AppCompatActivity {
     private View explosionOverlay;
     private com.google.android.material.button.MaterialButton skipButton;
     private CircularPlayerLayout circularGameLayout;
+    private ImageButton pauseButton;
 
     // Team timer TextViews
     private List<TextView> teamTimerViews;
@@ -62,8 +65,10 @@ public class GameActivity extends AppCompatActivity {
     // State
     private boolean isPlaying = false;
     private boolean canSkip = false;
+    private boolean isPaused = false;
     private long bombTimeRemaining;
     private long lastTeamTimerUpdate;
+    private AlertDialog pauseDialog;
 
     // Handler for tick sound
     private Handler tickHandler;
@@ -95,6 +100,7 @@ public class GameActivity extends AppCompatActivity {
         explosionOverlay = findViewById(R.id.explosionOverlay);
         skipButton = findViewById(R.id.skipButton);
         circularGameLayout = findViewById(R.id.circularGameLayout);
+        pauseButton = findViewById(R.id.pauseButton);
 
         teamTimerViews = new ArrayList<>();
         playerIndicatorViews = new ArrayList<>();
@@ -105,6 +111,9 @@ public class GameActivity extends AppCompatActivity {
 
         // Skip button
         skipButton.setOnClickListener(v -> onSkipClicked());
+
+        // Pause button
+        pauseButton.setOnClickListener(v -> showPauseDialog());
 
         tickHandler = new Handler(Looper.getMainLooper());
 
@@ -204,17 +213,17 @@ public class GameActivity extends AppCompatActivity {
         int dotSize;
         float textSize;
         if (playerCount <= 4) {
-            indicatorSize = (int) (55 * density);
+            indicatorSize = (int) (70 * density);
             dotSize = (int) (18 * density);
-            textSize = 10;
+            textSize = 11;
         } else if (playerCount <= 6) {
-            indicatorSize = (int) (50 * density);
+            indicatorSize = (int) (65 * density);
             dotSize = (int) (16 * density);
-            textSize = 9;
+            textSize = 10;
         } else {
-            indicatorSize = (int) (45 * density);
+            indicatorSize = (int) (55 * density);
             dotSize = (int) (14 * density);
-            textSize = 8;
+            textSize = 9;
         }
 
         for (int i = 0; i < playerCount; i++) {
@@ -258,8 +267,8 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private String truncateName(String name) {
-        if (name.length() > 6) {
-            return name.substring(0, 5) + "..";
+        if (name.length() > 24) {
+            return name.substring(0, 23) + "..";
         }
         return name;
     }
@@ -737,6 +746,73 @@ public class GameActivity extends AppCompatActivity {
         int minutes = seconds / 60;
         seconds = seconds % 60;
         return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds);
+    }
+
+    private void showPauseDialog() {
+        // Only pause if playing
+        if (isPlaying) {
+            isPaused = true;
+            stopTimers();
+            stopTickSound();
+        }
+
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_pause, null);
+
+        pauseDialog = new AlertDialog.Builder(this, R.style.PauseDialogTheme)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+
+        dialogView.findViewById(R.id.resumeButton).setOnClickListener(v -> {
+            pauseDialog.dismiss();
+            resumeGame();
+        });
+
+        dialogView.findViewById(R.id.endGameButton).setOnClickListener(v -> {
+            pauseDialog.dismiss();
+            stopTimers();
+            stopTickSound();
+            gameManager.reset();
+            // Start background music and go to MainActivity
+            soundManager.startBackgroundMusic();
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
+
+        pauseDialog.show();
+    }
+
+    private void resumeGame() {
+        isPaused = false;
+        if (isPlaying) {
+            // Resume timers
+            startBombTimerFromRemaining();
+            startTeamTimer();
+            startTickSound();
+        }
+    }
+
+    private void startBombTimerFromRemaining() {
+        bombTimer = new CountDownTimer(bombTimeRemaining, 100) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                bombTimeRemaining = millisUntilFinished;
+                updateBombTimerDisplay();
+
+                // Start intense mode in last 10 seconds
+                int seconds = (int) (millisUntilFinished / 1000);
+                if (seconds <= 10 && !soundManager.isIntenseMode()) {
+                    soundManager.setIntenseMode(true);
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                onBombExploded();
+            }
+        }.start();
     }
 
     @Override
