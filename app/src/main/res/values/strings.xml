@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">دُر</string>
+    <string name="app_name">دور: رقیق سازی</string>
 
     <!-- Navigation -->
     <string name="nav_add_words">افزودن کلمه</string>
@@ -22,7 +22,7 @@
     <string name="player_hint">اسم بازیکن</string>
     <string name="next">بعدی</string>
     <string name="back">قبلی</string>
-    <string name="no_duplicate_names">⚠️ از اسامی تکراری استفاده نکنید</string>
+    <string name="no_duplicate_names">از اسامی تکراری استفاده نکنید</string>
 
     <!-- Category Activity -->
     <string name="select_categories">دسته‌بندی‌ها را انتخاب کنید</string>
@@ -30,9 +30,9 @@
 
     <!-- Mode Activity -->
     <string name="select_mode">حالت بازی را انتخاب کنید</string>
-    <string name="quick_mode">⚡ حالت سریع</string>
+    <string name="quick_mode">حالت سریع</string>
     <string name="quick_mode_desc">هر تیم ۱ دقیقه و ۳۰ ثانیه\nتایمر بمب: ۲۵ ثانیه</string>
-    <string name="pro_mode">🎯 حالت حرفه‌ای</string>
+    <string name="pro_mode">حالت حرفه‌ای</string>
     <string name="pro_mode_desc">هر تیم ۲ دقیقه و ۴۵ ثانیه\nتایمر بمب: ۴۰ ثانیه</string>
     <string name="start_game">شروع بازی</string>
 
@@ -48,7 +48,7 @@
     <string name="end_game">اتمام بازی</string>
 
     <!-- Winner Activity -->
-    <string name="winner">🏆 برنده</string>
+    <string name="winner">برنده</string>
     <string name="team_wins">تیم %s برنده شد!</string>
     <string name="play_again">بازی دوباره</string>
     <string name="main_menu">منوی اصلی</string>
@@ -57,7 +57,7 @@
     <string name="team_eliminated_title">تیم حذف شد!</string>
     <string name="team_eliminated_message">زمان این تیم تمام شد و از بازی حذف شدند</string>
     <string name="continue_game">ادامه بازی</string>
-    <string name="game_history">📜 تاریخچه بازی:</string>
+    <string name="game_history">تاریخچه بازی:</string>
 
     <!-- Categories -->
     <string name="cat_film">فیلم و سریال</string>

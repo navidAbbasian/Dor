@@ -13,7 +13,7 @@
         android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="✍️ اسامی بازیکنان"
+        android:text="اسامی بازیکنان"
         android:textColor="@color/text_primary"
         android:textSize="24sp"
         android:textStyle="bold"

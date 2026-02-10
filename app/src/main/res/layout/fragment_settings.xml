@@ -15,7 +15,7 @@
             android:id="@+id/titleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⚙️ تنظیمات"
+            android:text="تنظیمات"
             android:textColor="@color/text_primary"
             android:textSize="24sp"
             android:textStyle="bold"
@@ -55,7 +55,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="🔊 جلوه‌های صوتی"
+                        android:text="جلوه‌های صوتی"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"/>
 
@@ -86,7 +86,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="🎵 موسیقی پس‌زمینه"
+                        android:text="موسیقی پس‌زمینه"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"/>
 
@@ -117,7 +117,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="📳 لرزش"
+                        android:text="لرزش"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"/>
 
@@ -157,7 +157,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🎮 دُر"
+                    android:text="دور: رقیق سازی"
                     android:textColor="@color/text_primary"
                     android:textSize="32sp"
                     android:textStyle="bold"/>
@@ -165,7 +165,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="نسخه ۱.۰"
+                    android:text="نسخه ۱.۰۲"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     android:layout_marginTop="8dp"/>
