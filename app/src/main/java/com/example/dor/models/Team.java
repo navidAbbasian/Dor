@@ -12,6 +12,7 @@ public class Team {
     private List<Player> players;
     private long remainingTimeMillis;
     private boolean eliminated;
+    private List<GameEvent> gameEvents;
 
     public Team(int id, String color, long initialTimeMillis) {
         this.id = id;
@@ -19,6 +20,7 @@ public class Team {
         this.players = new ArrayList<>();
         this.remainingTimeMillis = initialTimeMillis;
         this.eliminated = false;
+        this.gameEvents = new ArrayList<>();
     }
 
     public int getId() {
@@ -69,5 +71,17 @@ public class Team {
             return players.get(index);
         }
         return null;
+    }
+
+    public void addGameEvent(GameEvent event) {
+        gameEvents.add(event);
+    }
+
+    public List<GameEvent> getGameEvents() {
+        return gameEvents;
+    }
+
+    public void clearGameEvents() {
+        gameEvents.clear();
     }
 }

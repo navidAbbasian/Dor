@@ -124,18 +124,51 @@
 
     </com.example.dor.views.CircularPlayerLayout>
 
+    <!-- Rotation Direction Indicator - subtle arc with arrow -->
+    <com.example.dor.views.RotationIndicatorView
+        android:id="@+id/rotationIndicator"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bombTimerText"
+        app:layout_constraintDimensionRatio="1:1"
+        android:layout_margin="8dp"
+        android:elevation="1dp"/>
+
     <!-- Explosion Effect Overlay -->
-    <View
+    <FrameLayout
         android:id="@+id/explosionOverlay"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@color/accent"
         android:alpha="0"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/bottomContainer"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bombTimerText"/>
+        app:layout_constraintTop_toBottomOf="@id/bombTimerText">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/accent"/>
+
+        <TextView
+            android:id="@+id/penaltyText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="-۱۵ ثانیه"
+            android:textColor="@color/white"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:shadowColor="#000000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="4"/>
+
+    </FrameLayout>
 
     <!-- Bottom Container -->
     <LinearLayout

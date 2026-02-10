@@ -53,6 +53,12 @@
     <string name="play_again">بازی دوباره</string>
     <string name="main_menu">منوی اصلی</string>
 
+    <!-- Team Eliminated Dialog -->
+    <string name="team_eliminated_title">تیم حذف شد!</string>
+    <string name="team_eliminated_message">زمان این تیم تمام شد و از بازی حذف شدند</string>
+    <string name="continue_game">ادامه بازی</string>
+    <string name="game_history">📜 تاریخچه بازی:</string>
+
     <!-- Categories -->
     <string name="cat_film">فیلم و سریال</string>
     <string name="cat_sports">ورزش</string>

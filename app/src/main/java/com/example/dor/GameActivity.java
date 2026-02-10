@@ -21,6 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.example.dor.models.GameEvent;
 import com.example.dor.models.GameMode;
 import com.example.dor.models.Team;
 import com.example.dor.models.Word;
@@ -69,6 +70,12 @@ public class GameActivity extends AppCompatActivity {
     private long bombTimeRemaining;
     private long lastTeamTimerUpdate;
     private AlertDialog pauseDialog;
+    private AlertDialog eliminatedDialog;
+
+    // Tracking for game events
+    private long wordStartTime;
+    private String currentWordText;
+    private TextView penaltyText;
 
     // Handler for tick sound
     private Handler tickHandler;
@@ -98,6 +105,7 @@ public class GameActivity extends AppCompatActivity {
         wordText = findViewById(R.id.wordText);
         nextTurnText = findViewById(R.id.nextTurnText);
         explosionOverlay = findViewById(R.id.explosionOverlay);
+        penaltyText = findViewById(R.id.penaltyText);
         skipButton = findViewById(R.id.skipButton);
         circularGameLayout = findViewById(R.id.circularGameLayout);
         pauseButton = findViewById(R.id.pauseButton);
@@ -418,9 +426,12 @@ public class GameActivity extends AppCompatActivity {
         Word word = gameManager.nextWord();
         if (word != null) {
             wordText.setText(word.getText());
+            currentWordText = word.getText();
         } else {
             wordText.setText("کلمه‌ای نیست!");
+            currentWordText = "";
         }
+        wordStartTime = System.currentTimeMillis();
 
         // Start bomb timer
         startBombTimer();
@@ -562,6 +573,14 @@ public class GameActivity extends AppCompatActivity {
         soundManager.playWordCorrect();
         soundManager.vibrateShort();
 
+        // Record the word event for current team before moving to next
+        Team currentTeam = gameManager.getCurrentTeam();
+        if (currentTeam != null && currentWordText != null && !currentWordText.isEmpty()) {
+            long timeSpent = System.currentTimeMillis() - wordStartTime;
+            GameEvent event = new GameEvent(GameEvent.EventType.WORD_GUESSED, currentWordText, timeSpent, 0);
+            currentTeam.addGameEvent(event);
+        }
+
         // Stop only team timer, bomb timer continues!
         if (teamTimer != null) {
             teamTimer.cancel();
@@ -592,9 +611,12 @@ public class GameActivity extends AppCompatActivity {
         Word word = gameManager.nextWord();
         if (word != null) {
             wordText.setText(word.getText());
+            currentWordText = word.getText();
         } else {
             wordText.setText("کلمه‌ای نیست!");
+            currentWordText = "";
         }
+        wordStartTime = System.currentTimeMillis();
 
         // Start team timer for new team
         startTeamTimer();
@@ -623,10 +645,28 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void onBombExploded() {
+        // Get penalty amount for display
+        GameMode mode = gameManager.getGameMode();
+        long penaltyMillis = mode.getPenaltyMillis();
+        int penaltySeconds = (int) (penaltyMillis / 1000);
+
+        // Update penalty text before showing explosion
+        if (penaltyText != null) {
+            penaltyText.setText("-" + penaltySeconds + " ثانیه");
+        }
+
         // Play explosion effects
         soundManager.playExplosion();
         soundManager.vibrate();
         showExplosionEffect();
+
+        // Record bomb event for current team before applying penalty
+        Team currentTeam = gameManager.getCurrentTeam();
+        if (currentTeam != null && currentWordText != null && !currentWordText.isEmpty()) {
+            long timeSpent = System.currentTimeMillis() - wordStartTime;
+            GameEvent event = new GameEvent(GameEvent.EventType.BOMB_EXPLODED, currentWordText, timeSpent, penaltyMillis);
+            currentTeam.addGameEvent(event);
+        }
 
         stopTimers();
         stopTickSound();
@@ -635,12 +675,31 @@ public class GameActivity extends AppCompatActivity {
         gameManager.onBombExploded();
 
         // Check if current team is eliminated
-        Team currentTeam = gameManager.getCurrentTeam();
+        currentTeam = gameManager.getCurrentTeam();
         if (currentTeam != null && currentTeam.isEliminated()) {
-            // Play team eliminated sound
-            soundManager.playTeamEliminated();
+            // Store eliminated team info before moving to next
+            Team eliminatedTeam = currentTeam;
+
             // Move to next team only if current team is eliminated
             gameManager.moveToNextTeam();
+
+            // Check if game is over
+            if (gameManager.isGameOver()) {
+                // Only show winner - no elimination sound/dialog needed
+                new Handler(Looper.getMainLooper()).postDelayed(this::showWinner, 1500);
+                return;
+            }
+
+            // Game continues - show eliminated dialog with sound
+            // Play team eliminated sound
+            soundManager.playTeamEliminated();
+            // Update UI
+            updateTeamTimerHighlight();
+            // Show eliminated dialog
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                showTeamEliminatedDialog(eliminatedTeam);
+            }, 1500);
+            return;
         }
         // If team is not eliminated, same player continues in new round
 
@@ -662,12 +721,13 @@ public class GameActivity extends AppCompatActivity {
 
     private void onTeamEliminated() {
         Team currentTeam = gameManager.getCurrentTeam();
+
         if (currentTeam != null) {
             currentTeam.setEliminated(true);
         }
 
-        // Play team eliminated sound
-        soundManager.playTeamEliminated();
+        // Store eliminated team info before moving to next
+        Team eliminatedTeam = currentTeam;
 
         stopTimers();
         stopTickSound();
@@ -677,13 +737,18 @@ public class GameActivity extends AppCompatActivity {
 
         // Check if game is over
         if (gameManager.isGameOver()) {
+            // Only show winner - no elimination sound/dialog needed
             showWinner();
             return;
         }
 
+        // Game continues - show eliminated dialog with sound
+        // Play team eliminated sound
+        soundManager.playTeamEliminated();
         // Update UI
         updateTeamTimerHighlight();
-        showCurrentPlayerTurn();
+        // Show eliminated dialog
+        showTeamEliminatedDialog(eliminatedTeam);
     }
 
     private void showExplosionEffect() {
@@ -738,6 +803,111 @@ public class GameActivity extends AppCompatActivity {
         }
         startActivity(intent);
         finish();
+    }
+
+    private void showTeamEliminatedDialog(Team eliminatedTeam) {
+        if (eliminatedTeam == null) return;
+
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_team_eliminated, null);
+
+        // Set eliminated team card color
+        androidx.cardview.widget.CardView teamCard = dialogView.findViewById(R.id.eliminatedTeamCard);
+        if (teamCard != null && eliminatedTeam.getColor() != null) {
+            teamCard.setCardBackgroundColor(Color.parseColor(eliminatedTeam.getColor()));
+        }
+
+        // Set player names
+        TextView player1Name = dialogView.findViewById(R.id.eliminatedPlayer1Name);
+        TextView player2Name = dialogView.findViewById(R.id.eliminatedPlayer2Name);
+
+        if (player1Name != null && eliminatedTeam.getPlayer(0) != null) {
+            player1Name.setText(eliminatedTeam.getPlayer(0).getName());
+        }
+        if (player2Name != null && eliminatedTeam.getPlayer(1) != null) {
+            player2Name.setText(eliminatedTeam.getPlayer(1).getName());
+        }
+
+        // Populate game events list
+        LinearLayout eventsContainer = dialogView.findViewById(R.id.gameEventsContainer);
+        if (eventsContainer != null) {
+            eventsContainer.removeAllViews();
+            List<GameEvent> events = eliminatedTeam.getGameEvents();
+
+            if (events.isEmpty()) {
+                // No events recorded
+                TextView noEventsText = new TextView(this);
+                noEventsText.setText("هیچ رویدادی ثبت نشده");
+                noEventsText.setTextColor(Color.parseColor("#AAAAAA"));
+                noEventsText.setGravity(Gravity.CENTER);
+                eventsContainer.addView(noEventsText);
+            } else {
+                float density = getResources().getDisplayMetrics().density;
+
+                for (int i = 0; i < events.size(); i++) {
+                    GameEvent event = events.get(i);
+
+                    LinearLayout eventRow = new LinearLayout(this);
+                    eventRow.setOrientation(LinearLayout.HORIZONTAL);
+                    eventRow.setPadding(0, (int)(4 * density), 0, (int)(4 * density));
+                    eventRow.setGravity(Gravity.CENTER_VERTICAL);
+
+                    // Event icon
+                    TextView iconText = new TextView(this);
+                    if (event.getType() == GameEvent.EventType.WORD_GUESSED) {
+                        iconText.setText("✅");
+                    } else {
+                        iconText.setText("💥");
+                    }
+                    iconText.setTextSize(16);
+                    iconText.setPadding(0, 0, (int)(8 * density), 0);
+
+                    // Word text
+                    TextView wordTextView = new TextView(this);
+                    wordTextView.setText(event.getWordText());
+                    wordTextView.setTextColor(Color.WHITE);
+                    wordTextView.setTextSize(14);
+                    LinearLayout.LayoutParams wordParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+                    wordTextView.setLayoutParams(wordParams);
+
+                    // Time spent
+                    TextView timeText = new TextView(this);
+                    int timeSeconds = (int) (event.getTimeSpentMillis() / 1000);
+                    timeText.setText(timeSeconds + " ث");
+                    timeText.setTextColor(Color.parseColor("#AAAAAA"));
+                    timeText.setTextSize(12);
+                    timeText.setPadding((int)(8 * density), 0, 0, 0);
+
+                    eventRow.addView(iconText);
+                    eventRow.addView(wordTextView);
+                    eventRow.addView(timeText);
+
+                    // If bomb exploded, add penalty info
+                    if (event.getType() == GameEvent.EventType.BOMB_EXPLODED) {
+                        TextView penaltyTextView = new TextView(this);
+                        int penaltySec = (int) (event.getPenaltyMillis() / 1000);
+                        penaltyTextView.setText(" (-" + penaltySec + "ث)");
+                        penaltyTextView.setTextColor(Color.parseColor("#F44336"));
+                        penaltyTextView.setTextSize(12);
+                        eventRow.addView(penaltyTextView);
+                    }
+
+                    eventsContainer.addView(eventRow);
+                }
+            }
+        }
+
+        eliminatedDialog = new AlertDialog.Builder(this, R.style.PauseDialogTheme)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create();
+
+        dialogView.findViewById(R.id.continueButton).setOnClickListener(v -> {
+            eliminatedDialog.dismiss();
+            // Continue to next player's turn
+            showCurrentPlayerTurn();
+        });
+
+        eliminatedDialog.show();
     }
 
     private String formatTime(long millis) {
