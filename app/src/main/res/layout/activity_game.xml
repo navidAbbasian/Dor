@@ -124,7 +124,7 @@
 
     </com.example.dor.views.CircularPlayerLayout>
 
-    <!-- Rotation Direction Indicator - subtle arc with arrow -->
+    <!-- Rotation Direction Indicator - arrows showing clockwise direction -->
     <com.example.dor.views.RotationIndicatorView
         android:id="@+id/rotationIndicator"
         android:layout_width="0dp"
@@ -135,7 +135,8 @@
         app:layout_constraintTop_toBottomOf="@id/bombTimerText"
         app:layout_constraintDimensionRatio="1:1"
         android:layout_margin="8dp"
-        android:elevation="1dp"/>
+        android:elevation="10dp"
+        android:translationZ="10dp"/>
 
     <!-- Explosion Effect Overlay -->
     <FrameLayout
@@ -189,7 +190,8 @@
             android:layout_height="wrap_content"
             android:text="نوبت بعدی: ..."
             android:textColor="@color/text_secondary"
-            android:textSize="16sp"
+            android:textSize="19sp"
+            android:textStyle="bold"
             android:layout_marginBottom="16dp"/>
 
         <!-- Skip Word Button -->

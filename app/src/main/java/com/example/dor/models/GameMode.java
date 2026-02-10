@@ -4,8 +4,8 @@ package com.example.dor.models;
  * Enum representing game modes
  */
 public enum GameMode {
-    QUICK(90000, 25000, 15000, 8000),      // 1:30 total, 25s bomb, 15s penalty, 8s skip cooldown
-    PROFESSIONAL(165000, 40000, 15000, 8000); // 2:45 total, 40s bomb, 15s penalty, 8s skip cooldown
+    QUICK(90000, 25000, 15000, 5000),      // 1:30 total, 25s bomb, 15s penalty, 5s skip cooldown
+    PROFESSIONAL(165000, 40000, 15000, 5000); // 2:45 total, 40s bomb, 15s penalty, 5s skip cooldown
 
     private final long teamTimeMillis;
     private final long bombTimeMillis;

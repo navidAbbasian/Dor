@@ -4,21 +4,19 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 
 /**
  * A subtle directional indicator showing clockwise rotation direction
- * with a minimal arc and arrow
+ * with small arrows around the circle
  */
 public class RotationIndicatorView extends View {
 
-    private Paint arcPaint;
     private Paint arrowPaint;
     private Path arrowPath;
-    private RectF arcRect;
-    private float arcRadius;
+    private float radius;
+    private int arrowCount = 3; // Number of arrows around the circle
 
     public RotationIndicatorView(Context context) {
         super(context);
@@ -36,40 +34,20 @@ public class RotationIndicatorView extends View {
     }
 
     private void init() {
-        // Arc paint - subtle but visible
-        arcPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        arcPaint.setStyle(Paint.Style.STROKE);
-        arcPaint.setStrokeWidth(dpToPx(2.5f));
-        arcPaint.setColor(0x60FFFFFF); // More visible white (about 38% opacity)
-        arcPaint.setStrokeCap(Paint.Cap.ROUND);
-
-        // Arrow paint
+        // Arrow paint - more visible
         arrowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         arrowPaint.setStyle(Paint.Style.FILL);
-        arrowPaint.setColor(0x80FFFFFF); // 50% opacity for arrow
+        arrowPaint.setColor(0xAAFFFFFF); // 67% opacity - more visible
 
         arrowPath = new Path();
-        arcRect = new RectF();
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-
         int size = Math.min(w, h);
-        float centerX = w / 2f;
-        float centerY = h / 2f;
-
-        // Arc radius - positioned between center and players
-        arcRadius = size * 0.28f;
-
-        float padding = dpToPx(8);
-        arcRect.set(
-            centerX - arcRadius,
-            centerY - arcRadius,
-            centerX + arcRadius,
-            centerY + arcRadius
-        );
+        // Position arrows between center card and player indicators
+        radius = size * 0.26f;
     }
 
     @Override
@@ -78,36 +56,43 @@ public class RotationIndicatorView extends View {
 
         float centerX = getWidth() / 2f;
         float centerY = getHeight() / 2f;
+        float arrowSize = dpToPx(12); // Larger arrows
 
-        // Draw subtle arc - clockwise direction indicator
-        // Start from top-right and go most of the way around
-        canvas.drawArc(arcRect, -60, 300, false, arcPaint);
+        // Draw small arrows at different positions around the circle
+        // Arrows pointing in clockwise tangent direction
+        // Position at: top-right, right, bottom-right (showing clockwise flow)
+        float[] angles = {-30, 90, 210}; // degrees, starting from right=0
 
-        // Draw small arrow at the end of arc (indicating clockwise direction)
-        float arrowAngle = (float) Math.toRadians(-60 + 300); // End of arc
-        float arrowX = centerX + arcRadius * (float) Math.cos(arrowAngle);
-        float arrowY = centerY + arcRadius * (float) Math.sin(arrowAngle);
+        for (float angleDeg : angles) {
+            float angle = (float) Math.toRadians(angleDeg);
+            float arrowX = centerX + radius * (float) Math.cos(angle);
+            float arrowY = centerY + radius * (float) Math.sin(angle);
 
-        // Arrow pointing in clockwise tangent direction
-        float arrowSize = dpToPx(10);
-        float tangentAngle = arrowAngle + (float) Math.toRadians(90); // Perpendicular to radius, clockwise
+            // Tangent angle for clockwise direction (perpendicular + 90 degrees)
+            float tangentAngle = angle + (float) Math.toRadians(90);
 
+            drawArrow(canvas, arrowX, arrowY, tangentAngle, arrowSize);
+        }
+    }
+
+    private void drawArrow(Canvas canvas, float x, float y, float angle, float size) {
         arrowPath.reset();
+
         // Arrow tip
-        float tipX = arrowX + arrowSize * (float) Math.cos(tangentAngle);
-        float tipY = arrowY + arrowSize * (float) Math.sin(tangentAngle);
+        float tipX = x + size * (float) Math.cos(angle);
+        float tipY = y + size * (float) Math.sin(angle);
         arrowPath.moveTo(tipX, tipY);
 
-        // Arrow base points
-        float baseAngle1 = tangentAngle + (float) Math.toRadians(140);
-        float baseAngle2 = tangentAngle - (float) Math.toRadians(140);
+        // Arrow base points (wider angle for chevron shape)
+        float baseAngle1 = angle + (float) Math.toRadians(150);
+        float baseAngle2 = angle - (float) Math.toRadians(150);
         arrowPath.lineTo(
-            arrowX + arrowSize * 0.7f * (float) Math.cos(baseAngle1),
-            arrowY + arrowSize * 0.7f * (float) Math.sin(baseAngle1)
+            x + size * 0.6f * (float) Math.cos(baseAngle1),
+            y + size * 0.6f * (float) Math.sin(baseAngle1)
         );
         arrowPath.lineTo(
-            arrowX + arrowSize * 0.7f * (float) Math.cos(baseAngle2),
-            arrowY + arrowSize * 0.7f * (float) Math.sin(baseAngle2)
+            x + size * 0.6f * (float) Math.cos(baseAngle2),
+            y + size * 0.6f * (float) Math.sin(baseAngle2)
         );
         arrowPath.close();
 

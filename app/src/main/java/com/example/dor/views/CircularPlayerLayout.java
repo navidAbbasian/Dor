@@ -1,19 +1,23 @@
 package com.example.dor.views;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 
 /**
  * A custom layout that arranges its children in a circle around a center point.
  * The first child is placed at the center, and all other children are arranged
- * in a circle around it.
+ * in a circle around it. Supports rotation animation to keep current player at bottom.
  */
 public class CircularPlayerLayout extends ViewGroup {
 
     private int centerViewSize = 0;
     private float radiusRatio = 0.38f;
+    private float rotationOffset = 0f; // Current rotation offset in degrees
+    private ValueAnimator rotationAnimator;
 
     public CircularPlayerLayout(Context context) {
         super(context);
@@ -87,7 +91,7 @@ public class CircularPlayerLayout extends ViewGroup {
         int maxRadius = (containerSize / 2) - (childSize / 2) - dpToPx(8);
         int radius = Math.max(minRadius, Math.min(maxRadius, (int)(containerSize * radiusRatio)));
 
-        // Layout each circular child
+        // Layout each circular child with rotation offset
         for (int i = 0; i < circularChildCount; i++) {
             View child = getChildAt(i + 1); // Skip center view
             if (child.getVisibility() == GONE) continue;
@@ -95,8 +99,9 @@ public class CircularPlayerLayout extends ViewGroup {
             int cw = child.getMeasuredWidth();
             int ch = child.getMeasuredHeight();
 
-            // Calculate angle: start from top (-90 degrees) and go clockwise
-            double angle = Math.toRadians(-90 + (360.0 / circularChildCount) * i);
+            // Calculate angle: start from bottom (90 degrees) and go clockwise
+            // Add rotationOffset to rotate all players
+            double angle = Math.toRadians(90 + (360.0 / circularChildCount) * i + rotationOffset);
 
             // Calculate center position of child
             int childCenterX = centerX + (int)(radius * Math.cos(angle));
@@ -108,6 +113,59 @@ public class CircularPlayerLayout extends ViewGroup {
 
             child.layout(cl, ct, cl + cw, ct + ch);
         }
+    }
+
+    /**
+     * Rotate to put a specific player index at the bottom
+     * @param playerIndex The index of the player (0-based, in circular children, not including center)
+     * @param animate Whether to animate the rotation
+     */
+    public void rotateToPlayer(int playerIndex, boolean animate) {
+        int circularChildCount = getChildCount() - 1;
+        if (circularChildCount <= 0) return;
+
+        // Calculate target rotation offset
+        // Player at index 0 is at 90 degrees by default (bottom)
+        // To put player at playerIndex at bottom, we need to rotate by -(playerIndex * angleStep)
+        float angleStep = 360f / circularChildCount;
+        float targetOffset = -playerIndex * angleStep;
+
+        // Normalize to avoid spinning multiple times
+        while (targetOffset - rotationOffset > 180) targetOffset -= 360;
+        while (targetOffset - rotationOffset < -180) targetOffset += 360;
+
+        if (animate) {
+            if (rotationAnimator != null && rotationAnimator.isRunning()) {
+                rotationAnimator.cancel();
+            }
+
+            rotationAnimator = ValueAnimator.ofFloat(rotationOffset, targetOffset);
+            rotationAnimator.setDuration(400);
+            rotationAnimator.setInterpolator(new DecelerateInterpolator());
+            rotationAnimator.addUpdateListener(animation -> {
+                rotationOffset = (float) animation.getAnimatedValue();
+                requestLayout();
+            });
+            rotationAnimator.start();
+        } else {
+            rotationOffset = targetOffset;
+            requestLayout();
+        }
+    }
+
+    /**
+     * Get the current rotation offset
+     */
+    public float getRotationOffset() {
+        return rotationOffset;
+    }
+
+    /**
+     * Set rotation offset directly (useful for initial setup)
+     */
+    public void setRotationOffset(float offset) {
+        this.rotationOffset = offset;
+        requestLayout();
     }
 
     private int dpToPx(int dp) {

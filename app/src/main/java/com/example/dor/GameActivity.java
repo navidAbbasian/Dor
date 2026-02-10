@@ -216,22 +216,22 @@ public class GameActivity extends AppCompatActivity {
             return;
         }
 
-        // Calculate indicator size based on player count
+        // Calculate indicator size based on player count - 40% larger than original
         int indicatorSize;
         int dotSize;
         float textSize;
         if (playerCount <= 4) {
-            indicatorSize = (int) (70 * density);
-            dotSize = (int) (18 * density);
-            textSize = 11;
+            indicatorSize = (int) (100 * density);  // 70 * 1.44
+            dotSize = (int) (26 * density);         // 18 * 1.44
+            textSize = 16;                           // 11 * 1.44
         } else if (playerCount <= 6) {
-            indicatorSize = (int) (65 * density);
-            dotSize = (int) (16 * density);
-            textSize = 10;
+            indicatorSize = (int) (94 * density);   // 65 * 1.44
+            dotSize = (int) (23 * density);         // 16 * 1.44
+            textSize = 14;                           // 10 * 1.44
         } else {
-            indicatorSize = (int) (55 * density);
-            dotSize = (int) (14 * density);
-            textSize = 9;
+            indicatorSize = (int) (79 * density);   // 55 * 1.44
+            dotSize = (int) (20 * density);         // 14 * 1.44
+            textSize = 13;                           // 9 * 1.44
         }
 
         for (int i = 0; i < playerCount; i++) {
@@ -270,6 +270,15 @@ public class GameActivity extends AppCompatActivity {
             playerIndicatorViews.add(playerContainer);
         }
 
+        // Initial rotation without animation - put first player at bottom
+        String currentPlayerName = gameManager.getCurrentPlayerName();
+        for (int i = 0; i < circularPlayerOrder.size(); i++) {
+            if (circularPlayerOrder.get(i).equals(currentPlayerName)) {
+                circularGameLayout.rotateToPlayer(i, false);
+                break;
+            }
+        }
+
         updateCurrentPlayerHighlight();
         android.util.Log.d("GameActivity", "Created " + playerIndicatorViews.size() + " player indicators");
     }
@@ -283,10 +292,16 @@ public class GameActivity extends AppCompatActivity {
 
     private void updateCurrentPlayerHighlight() {
         String currentPlayerName = gameManager.getCurrentPlayerName();
+        int currentPlayerIndex = -1;
 
         // First, stop ALL animations and reset ALL players to default state
         for (int i = 0; i < playerIndicatorViews.size(); i++) {
             View container = playerIndicatorViews.get(i);
+
+            // Find current player index
+            if (circularPlayerOrder.get(i).equals(currentPlayerName)) {
+                currentPlayerIndex = i;
+            }
 
             // Stop any existing animation first
             Object tag = container.getTag(R.id.playerNameText);
@@ -297,10 +312,10 @@ public class GameActivity extends AppCompatActivity {
                 container.setTag(R.id.playerNameText, null);
             }
 
-            // Reset all properties immediately
+            // Reset all properties immediately - all players at normal size
             container.setScaleX(1f);
             container.setScaleY(1f);
-            container.setAlpha(0.5f);
+            container.setAlpha(0.6f);  // Slightly more visible
             container.setBackground(null);
             container.setPadding(0, 0, 0, 0);
 
@@ -318,6 +333,11 @@ public class GameActivity extends AppCompatActivity {
             nameText.setShadowLayer(0, 0, 0, Color.TRANSPARENT);
         }
 
+        // Rotate the circular layout to put current player at bottom
+        if (currentPlayerIndex >= 0) {
+            circularGameLayout.rotateToPlayer(currentPlayerIndex, true);
+        }
+
         // Now highlight only the current player
         for (int i = 0; i < playerIndicatorViews.size(); i++) {
             String playerName = circularPlayerOrder.get(i);
@@ -328,38 +348,19 @@ public class GameActivity extends AppCompatActivity {
                 TextView nameText = (TextView) playerContainer.getChildAt(1);
                 String teamColor = gameManager.getTeamColorByPlayerName(playerName);
 
-                // Highlight current player with scale, glow effect and background
-                container.setScaleX(1.5f);
-                container.setScaleY(1.5f);
+                // Current player: full opacity and 20% larger
                 container.setAlpha(1f);
+                container.setScaleX(1.2f);
+                container.setScaleY(1.2f);
 
-                // Add distinctive background to the container
-                container.setBackground(getDrawable(R.drawable.current_player_background));
-                container.setPadding(8, 8, 8, 8);
-
-                // Change dot to active style with glow ring
-                dot.setBackground(getDrawable(R.drawable.player_dot_active));
+                // Keep normal dot style, just full color
+                dot.setBackground(getDrawable(R.drawable.player_dot));
                 dot.getBackground().setTint(Color.parseColor(teamColor));
 
-                // Make name text bold and brighter
-                nameText.setTextColor(Color.WHITE);
+                // Make name text same color but bold
+                nameText.setTextColor(Color.parseColor(teamColor));
                 nameText.setTypeface(nameText.getTypeface(), android.graphics.Typeface.BOLD);
-                nameText.setShadowLayer(8, 0, 0, Color.parseColor(teamColor));
 
-                // Add pulsing animation with more dramatic effect
-                ObjectAnimator scaleX = ObjectAnimator.ofFloat(container, "scaleX", 1.5f, 1.7f, 1.5f);
-                ObjectAnimator scaleY = ObjectAnimator.ofFloat(container, "scaleY", 1.5f, 1.7f, 1.5f);
-                ObjectAnimator alphaAnim = ObjectAnimator.ofFloat(container, "alpha", 1f, 0.85f, 1f);
-                scaleX.setDuration(800);
-                scaleY.setDuration(800);
-                alphaAnim.setDuration(800);
-                scaleX.setRepeatCount(ObjectAnimator.INFINITE);
-                scaleY.setRepeatCount(ObjectAnimator.INFINITE);
-                alphaAnim.setRepeatCount(ObjectAnimator.INFINITE);
-                scaleX.start();
-                scaleY.start();
-                alphaAnim.start();
-                container.setTag(R.id.playerNameText, new ObjectAnimator[]{scaleX, scaleY, alphaAnim});
 
                 break; // Only one current player
             }
