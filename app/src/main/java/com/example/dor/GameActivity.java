@@ -865,7 +865,7 @@ public class GameActivity extends AppCompatActivity {
                     // Word text
                     TextView wordTextView = new TextView(this);
                     wordTextView.setText(event.getWordText());
-                    wordTextView.setTextColor(Color.WHITE);
+                    wordTextView.setTextColor(Color.parseColor("#1A1A2E"));
                     wordTextView.setTextSize(14);
                     LinearLayout.LayoutParams wordParams = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
                     wordTextView.setLayoutParams(wordParams);
