@@ -10,10 +10,10 @@
         <item name="colorSecondaryVariant">@color/button_tertiary</item>
         <item name="colorOnSecondary">@color/text_on_primary</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:statusBarColor">@color/white</item>
         <item name="android:navigationBarColor">@color/nav_background</item>
         <item name="android:windowBackground">@color/background</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
         <!-- RTL Support -->
         <item name="android:layoutDirection">rtl</item>
         <item name="android:textDirection">rtl</item>

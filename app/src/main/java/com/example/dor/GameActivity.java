@@ -69,6 +69,7 @@ public class GameActivity extends AppCompatActivity {
     private boolean isPaused = false;
     private long bombTimeRemaining;
     private long lastTeamTimerUpdate;
+    private int currentTimerTeamId = -1; // Track which team the current timer belongs to
     private AlertDialog pauseDialog;
     private AlertDialog eliminatedDialog;
 
@@ -476,30 +477,60 @@ public class GameActivity extends AppCompatActivity {
         if (currentTeam == null) return;
 
         lastTeamTimerUpdate = System.currentTimeMillis();
+        currentTimerTeamId = currentTeam.getId(); // Track which team this timer is for
 
         teamTimer = new CountDownTimer(currentTeam.getRemainingTimeMillis(), 100) {
+            private final int timerTeamId = currentTimerTeamId; // Capture the team ID for this timer instance
+
             @Override
             public void onTick(long millisUntilFinished) {
                 // Only update team time if actually playing (prevents updates during waiting for player click)
                 if (!isPlaying) return;
 
+                // Verify this timer still belongs to the current team (prevent race conditions)
                 Team team = gameManager.getCurrentTeam();
-                if (team != null) {
-                    long elapsed = System.currentTimeMillis() - lastTeamTimerUpdate;
-                    lastTeamTimerUpdate = System.currentTimeMillis();
-                    team.subtractTime(elapsed);
-                    updateTeamTimerDisplay(gameManager.getCurrentTeamIndex());
+                if (team == null || team.getId() != timerTeamId) {
+                    cancel();
+                    return;
+                }
 
-                    if (team.getRemainingTimeMillis() <= 0) {
-                        cancel();
-                        onTeamEliminated();
-                    }
+                long elapsed = System.currentTimeMillis() - lastTeamTimerUpdate;
+                lastTeamTimerUpdate = System.currentTimeMillis();
+                team.subtractTime(elapsed);
+                updateTeamTimerDisplay(gameManager.getCurrentTeamIndex());
+
+                if (team.getRemainingTimeMillis() <= 0) {
+                    cancel();
+                    onTeamEliminated();
                 }
             }
 
             @Override
             public void onFinish() {
-                onTeamEliminated();
+                // Verify this timer still belongs to the current team
+                Team team = gameManager.getCurrentTeam();
+                if (team == null || team.getId() != timerTeamId) {
+                    return;
+                }
+
+                // Finalize any remaining elapsed time
+                if (isPlaying) {
+                    long elapsed = System.currentTimeMillis() - lastTeamTimerUpdate;
+                    team.subtractTime(elapsed);
+                    lastTeamTimerUpdate = System.currentTimeMillis();
+                    updateTeamTimerDisplay(gameManager.getCurrentTeamIndex());
+                }
+
+                // Only eliminate if team actually has no time remaining
+                // (CountDownTimer's onFinish might fire due to timing drift even if team has time)
+                if (team.getRemainingTimeMillis() <= 0) {
+                    onTeamEliminated();
+                } else {
+                    // Timer finished but team still has time - restart timer with remaining time
+                    android.util.Log.w("GameActivity", "Timer onFinish but team has " +
+                        team.getRemainingTimeMillis() + "ms remaining - restarting timer");
+                    startTeamTimer();
+                }
             }
         }.start();
     }
@@ -585,6 +616,12 @@ public class GameActivity extends AppCompatActivity {
         // Stop only team timer, bomb timer continues!
         if (teamTimer != null) {
             teamTimer.cancel();
+            // Finalize team time - subtract any remaining time since last tick
+            if (currentTeam != null && isPlaying) {
+                long elapsed = System.currentTimeMillis() - lastTeamTimerUpdate;
+                currentTeam.subtractTime(elapsed);
+                updateTeamTimerDisplay(gameManager.getCurrentTeamIndex());
+            }
         }
         if (skipCooldownTimer != null) {
             skipCooldownTimer.cancel();
@@ -669,6 +706,13 @@ public class GameActivity extends AppCompatActivity {
             currentTeam.addGameEvent(event);
         }
 
+        // Finalize team time - subtract any remaining time since last tick before stopping timers
+        if (currentTeam != null && isPlaying) {
+            long elapsed = System.currentTimeMillis() - lastTeamTimerUpdate;
+            currentTeam.subtractTime(elapsed);
+            updateTeamTimerDisplay(gameManager.getCurrentTeamIndex());
+        }
+
         stopTimers();
         stopTickSound();
 
@@ -722,6 +766,13 @@ public class GameActivity extends AppCompatActivity {
 
     private void onTeamEliminated() {
         Team currentTeam = gameManager.getCurrentTeam();
+
+        // Debug logging to track elimination
+        if (currentTeam != null) {
+            android.util.Log.d("GameActivity", "Team " + currentTeam.getId() + " eliminated. " +
+                "Remaining time: " + currentTeam.getRemainingTimeMillis() + "ms. " +
+                "Events count: " + currentTeam.getGameEvents().size());
+        }
 
         if (currentTeam != null) {
             currentTeam.setEliminated(true);
@@ -989,6 +1040,13 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        // Finalize team time before stopping timers to prevent time drift
+        Team currentTeam = gameManager.getCurrentTeam();
+        if (currentTeam != null && isPlaying) {
+            long elapsed = System.currentTimeMillis() - lastTeamTimerUpdate;
+            currentTeam.subtractTime(elapsed);
+            lastTeamTimerUpdate = System.currentTimeMillis();
+        }
         stopTimers();
         stopTickSound();
     }
